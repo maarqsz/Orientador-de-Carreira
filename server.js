@@ -16,7 +16,14 @@ const app = express();
 const PORT = 3001;
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://orientador-de-carreira-front.vercel.app', // produção
+    'http://localhost:5173' // ambiente de desenvolvimento local
+  ],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 // ---- IMPORTANTE: SERVIR ARQUIVOS ESTÁTICOS ----
