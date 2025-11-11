@@ -131,28 +131,25 @@ export async function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
     const nomeArquivo = `relatorio_${Date.now()}.pdf`;
     const caminhoFinal = path.join(reportsDir, nomeArquivo);
 
-    const html = gerarHTMLRelatorio(dadosUsuario, textoDaIA);
+    const html = gerarRelatorioPDF(dadosUsuario, textoDaIA);
 
+    // O caminho EXATO que o log nos deu
+    const cacheDir = '/opt/render/.cache/puppeteer'; 
+    
     const browser = await puppeteer.launch({
-      headless: "new", // Use a string "new"
-      args: ['--no-sandbox']
+      headless: "new",
+      args: ['--no-sandbox'],
+      cacheDirectory: cacheDir // Apontando para o lugar certo
     });
 
     const page = await browser.newPage();
-    
-    // --- MUDANÇA 3: A CORREÇÃO PRINCIPAL ---
-    // Força o Puppeteer a usar os estilos de "tela" (com cores e fontes)
-    await page.emulateMediaType('screen'); 
-
-    await page.setContent(html, { 
-      // Espera a fonte do Google (da tag <link>) carregar
-      waitUntil: 'networkidle0' 
-    });
+    await page.emulateMediaType('screen'); 
+    await page.setContent(html, { waitUntil: 'networkidle0' });
 
     await page.pdf({
       path: caminhoFinal,
       format: 'A4',
-      printBackground: true, // Isso já estava correto
+      printBackground: true,
       margin: { top: '30px', bottom: '30px', left: '30px', right: '30px' }
     });
 
@@ -161,7 +158,7 @@ export async function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
     const caminhoPublico = `/public/reports/${nomeArquivo}`;
     return caminhoPublico;
   } catch (error) {
-    console.error('Erro ao gerar PDF:', error);
+    console.error('Erro ao gerar PDF:', error); // O log que você viu!
     throw new Error('Falha ao gerar PDF.');
   }
 }
