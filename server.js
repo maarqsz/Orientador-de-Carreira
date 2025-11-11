@@ -102,4 +102,4 @@ setupDb()
     });
   })
   .catch(console.error);
-        console.error('💥 Erro ao gerar o PDF:', err);
+      
