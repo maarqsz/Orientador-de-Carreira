@@ -1,0 +1,12 @@
+# Dependências
+node_modules/
+
+# Arquivo de Chave de API
+.env
+
+# Relatórios gerados (não queremos versionar isso)
+public/reports/
+
+# Logs
+npm-debug.log
+*.log

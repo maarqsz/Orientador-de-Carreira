@@ -1,0 +1,87 @@
+
+      /* --- CORREÇÃO DE ESPAÇAMENTO (AGORA VAI) --- */
+      body {
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important;
+        font-family: 'Poppins', sans-serif;
+        margin: 40px;
+        color: #333;
+        line-height: 1.6;
+        background-color: #fff;
+      }
+      
+      h1 {
+        color: #003366;
+        font-size: 22px;
+        text-align: center;
+        border-bottom: 3px solid #003366;
+        padding-bottom: 10px;
+        margin-bottom: 25px; /* Espaço OK */
+      }
+
+      /* --- AJUSTE PRINCIPAL AQUI --- */
+      h2 {
+        color: #003366;
+        margin-top: 0; /* <<<--- BALA DE PRATA (ZERA A MARGEM DE CIMA) */
+        font-size: 18px;
+        margin-bottom: 15px; /* <<<--- NOVO (Empurra o texto de baixo) */
+      }
+
+      h3 {
+        color: #003366;
+        font-size: 16px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+      }
+
+      /* --- AJUSTE PRINCIPAL AQUI --- */
+      .secao {
+        /* Este é o ÚNICO controle de espaço entre os blocos */
+        margin-bottom: 25px; /* <<<--- AJUSTADO (era 15px) */
+      }
+
+      /* --- AJUSTE PRINCIPAL AQUI --- */
+      .info p {
+        margin: 4px 0; /* <<<--- AJUSTADO (1px é muito colado) */
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+
+      .info strong {
+        color: #003366;
+        min-width: 100px;
+        margin-right: 10px;
+      }
+
+      .texto-ia {
+        font-size: 14px;
+        text-align: justify;
+        color: #222;
+      }
+
+      .texto-ia p {
+        margin-bottom: 15px;
+      }
+
+      .texto-ia ul {
+        padding-left: 20px;
+        margin-bottom: 15px;
+      }
+
+      .texto-ia li {
+        margin-bottom: 8px;
+      }
+
+      .texto-ia strong {
+        color: #003366;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 12px;
+        color: #777;
+        border-top: 1px solid #ccc; 
+        padding-top: 10px;
+      }
