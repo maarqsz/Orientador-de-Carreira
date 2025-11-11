@@ -33,45 +33,50 @@ app.get('/api/teste', (req, res) => {
  * ROTA PRINCIPAL (AGORA GERA PDF!)
  */
 app.post('/api/analise', async (req, res) => {
-  const dadosDoFormulario = req.body;
-  console.log('Recebi dados:', dadosDoFormulario);
-  const hostUrl = `${req.protocol}://${req.get('host')}`; // Ex: http://localhost:3001
+  const dadosDoFormulario = req.body;
+  console.log('Recebi dados:', dadosDoFormulario);
+  
+  // CORREÇÃO: Pega a URL do host (ex: https://seu-backend.onrender.com)
+  const hostUrl = `${req.protocol}://${req.get('host')}`;
 
-  try {
-    // --- ETAPA 1: SALVAR NO BANCO ---
-    const db = await openDb();
-    const result = await db.run(
-      'INSERT INTO analises (nome, habilidades, interesses, experiencia) VALUES (?, ?, ?, ?)',
-      [dadosDoFormulario.nome, dadosDoFormulario.habilidades, dadosDoFormulario.interesses, dadosDoFormulario.experiencia]
-    );
-    const novoId = result.lastID;
-    console.log(`Dados salvos no banco com ID: ${novoId}`);
+  try {
+    // --- ETAPA 1: SALVAR NO BANCO ---
+    const db = await openDb();
+    const result = await db.run(
+      'INSERT INTO analises (nome, habilidades, interesses, experiencia) VALUES (?, ?, ?, ?)',
+      [dadosDoFormulario.nome, dadosDoFormulario.habilidades, dadosDoFormulario.interesses, dadosDoFormulario.experiencia]
+    );
+    const novoId = result.lastID;
+    console.log(`Dados salvos no banco com ID: ${novoId}`);
 
-    // --- ETAPA 2: CHAMAR A IA ---
-    console.log("Iniciando análise de IA...");
-    const analiseIA = await analisarCarreira(dadosDoFormulario);
+    // --- ETAPA 2: CHAMAR A IA ---
+    console.log("Iniciando análise de IA...");
+    const analiseIA = await analisarCarreira(dadosDoFormulario);
 
-    // --- ETAPA 3: GERAR O PDF ---
-    console.log("Gerando PDF...");
-    // O serviço retorna o caminho (ex: /public/reports/arquivo.pdf)
-    const caminhoPdf = await gerarRelatorioPDF(dadosDoFormulario, analiseIA);
+    // --- ETAPA 3: GERAR O PDF ---
+    console.log("Gerando PDF...");
+    // pdfService.js retorna o caminho (ex: /public/reports/arquivo.pdf)
+    const caminhoPdf = await gerarRelatorioPDF(dadosDoFormulario, analiseIA);
 
-    // --- ETAPA 4: RESPONDER PARA O FRONT-END ---
-    // Montamos a URL completa para o front-end
-    const urlFinalPdf = hostUrl + caminhoPdf;
+    // --- ETAPA 4: RESPONDER PARA O FRONT-END (com JSON) ---
+    // Monta a URL pública completa para o PDF
+    // ex: https://seu-backend.onrender.com/public/reports/arquivo.pdf
+    const urlFinalPdf = hostUrl + caminhoPdf;
 
-    res.json({
-      message: 'PDF gerado com sucesso!',
-      idSalvo: novoId,
-      pdfUrl: urlFinalPdf // <-- O FRONT SÓ RECEBE A URL
-    });
+    console.log("Enviando URL para o front-end:", urlFinalPdf);
 
-  } catch (error) {
-    console.error('Erro no fluxo /api/analise:', error);
-    res.status(500).json({ message: 'Erro interno no servidor.' });
-  }
+    // Envia o JSON que o seu App.js espera
+    res.json({
+      message: 'PDF gerado com sucesso!',
+      idSalvo: novoId,
+      pdfUrl: urlFinalPdf 
+    });
+
+  } catch (error) {
+    console.error('Erro no fluxo /api/analise:', error);
+    res.status(500).json({ message: 'Erro interno no servidor.' });
+  }
 });
-
 // Inicia o servidor
 setupDb().then(() => {
   app.listen(PORT, () => {
