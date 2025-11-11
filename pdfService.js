@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Corrige __dirname no ES Modules (Node.js moderno)
+// Corrige __dirname no ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -61,7 +61,7 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
       doc.moveDown(0.8);
 
       const paragrafos = textoDaIA
-        .replace(/\d+\.\s*/g, '') // remove numerações (1., 2., etc)
+        .replace(/\d+\.\s*/g, '')
         .split(/\n+/)
         .filter(p => p.trim().length > 0);
 
@@ -79,7 +79,7 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
         doc.moveDown(0.7);
       });
 
-      // ====== MENSAGEM FINAL MOTIVACIONAL ======
+      // ====== MENSAGEM FINAL ======
       doc.moveDown(1);
       doc.font('Helvetica-Bold').fillColor('#003366').fontSize(14)
         .text('Mensagem Final', { align: 'left' });
@@ -90,7 +90,7 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
           { align: 'justify' }
         );
 
-      // ====== FINALIZA O DOCUMENTO ======
+      // ====== FINALIZA ======
       doc.end();
 
       stream.on('finish', () => {
@@ -98,9 +98,9 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
         resolve(filePath);
       });
 
-      stream.on('error', (err) => {
-        console.error('❌ Erro ao gerar PDF:', err);
-        reject(err);
+      stream.on('error', (error) => {
+        console.error('❌ Erro ao gerar PDF:', error);
+        reject(error);
       });
 
     } catch (error) {

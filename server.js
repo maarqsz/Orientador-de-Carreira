@@ -17,9 +17,9 @@ const PORT = process.env.PORT || 3001;
 
 // ====== CONFIGURA CORS ======
 const allowedOrigins = [
-  'https://orientador-de-carreira-front.vercel.app', // domínio principal da Vercel
-  'https://orientador-de-carreira-front-e1dlsne6g.vercel.app', // preview do deploy
-  'http://localhost:5173', // ambiente local
+  'https://orientador-de-carreira-front.vercel.app',
+  'https://orientador-de-carreira-front-e1dlsne6g.vercel.app',
+  'http://localhost:5173',
 ];
 
 app.use(cors({
@@ -38,7 +38,6 @@ app.use(cors({
 app.use(express.json());
 
 // ====== SERVIR PDFs PUBLICAMENTE ======
-// Agora os relatórios são servidos em: /public/reports/arquivo.pdf
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // ====== ROTA DE TESTE ======
@@ -51,7 +50,6 @@ app.post('/api/analise', async (req, res) => {
   const dadosDoFormulario = req.body;
   console.log('📥 Recebi dados:', dadosDoFormulario);
 
-  // Captura a URL base do servidor (Render, local, etc.)
   const hostUrl = `${req.protocol}://${req.get('host')}`;
 
   try {
@@ -78,14 +76,15 @@ app.post('/api/analise', async (req, res) => {
     console.log('📄 Gerando PDF...');
     const caminhoPdf = await gerarRelatorioPDF(dadosDoFormulario, analiseIA);
 
-    // --- ETAPA 4: RETORNAR RESPOSTA PARA O FRONT ---
-    const urlFinalPdf = hostUrl + caminhoPdf;
+    // --- ETAPA 4: MONTAR URL FINAL ---
+    // Exemplo: http://localhost:3001/public/reports/NOME_analise.pdf
+    const urlFinalPdf = `${hostUrl}/public/reports/${path.basename(caminhoPdf)}`;
     console.log('📤 Enviando URL do PDF:', urlFinalPdf);
 
     res.json({
       message: 'PDF gerado com sucesso!',
       idSalvo: novoId,
-      pdfUrl: urlFinalPdf
+      pdfUrl: urlFinalPdf,
     });
 
   } catch (error) {
@@ -101,5 +100,4 @@ setupDb()
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
     });
   })
-  .catch(console.error);
-      
+  .catch((error) => console.error('❌ Erro ao iniciar servidor:', error));
