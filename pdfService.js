@@ -10,37 +10,25 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
   return new Promise((resolve, reject) => {
     try {
       const reportsDir = path.join(__dirname, "public", "reports");
-      if (!fs.existsSync(reportsDir)) {
-        fs.mkdirSync(reportsDir, { recursive: true });
-      }
+      if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
       const nomeArquivo = `${dadosUsuario.nome.replace(/\s+/g, "_")}_analise.pdf`;
       const filePath = path.join(reportsDir, nomeArquivo);
 
-      const doc = new PDFDocument({
-        margin: 60,
-        size: "A4",
-        layout: "portrait",
-      });
-
+      const doc = new PDFDocument({ margin: 60, size: "A4" });
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // ====== HEADER ======
+      // ====== CABEÇALHO ======
       doc.rect(0, 0, doc.page.width, 80).fill("#003366");
-      doc.fillColor("#ffffff")
-        .font("Helvetica-Bold")
-        .fontSize(22)
+      doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(22)
         .text("Relatório de Orientação de Carreira", 60, 30);
       doc.moveDown(3);
 
       // ====== DADOS DO USUÁRIO ======
-      doc.fillColor("#333333")
-        .font("Helvetica-Bold")
-        .fontSize(16)
+      doc.fillColor("#333333").font("Helvetica-Bold").fontSize(16)
         .text("Dados do Usuário:");
       doc.moveDown(0.5);
-
       doc.font("Helvetica").fontSize(12);
       doc.text(`• Nome: ${dadosUsuario.nome}`);
       doc.text(`• Habilidades: ${dadosUsuario.habilidades}`);
@@ -53,39 +41,45 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
       doc.moveDown(1.2);
 
       // ====== SEÇÃO DE ANÁLISE ======
-      doc.font("Helvetica-Bold").fontSize(16).fillColor("#003366").text("Análise Personalizada");
+      doc.font("Helvetica-Bold").fontSize(16).fillColor("#003366")
+        .text("Análise Personalizada");
       doc.moveDown(1);
 
-      // ====== FORMATA TEXTO DA IA ======
+      // ====== FORMATAÇÃO DE TEXTO ======
       const linhas = textoDaIA
         .replace(/\r\n/g, "\n")
         .split("\n")
         .map(l => l.trim())
         .filter(l => l.length > 0);
 
-      linhas.forEach((linha) => {
-        // Cabeçalhos markdown
+      linhas.forEach(linha => {
+        // --- Cabeçalhos Markdown ---
         if (/^#{3}\s+/.test(linha)) {
-          doc.moveDown(0.5);
-          doc.font("Helvetica-Bold").fontSize(13).fillColor("#003366").text(linha.replace(/^#{3}\s+/, ""));
+          doc.moveDown(0.8);
+          doc.font("Helvetica-Bold").fontSize(13).fillColor("#003366")
+            .text(linha.replace(/^#{3}\s+/, ""));
           doc.moveDown(0.5);
         } else if (/^#{2}\s+/.test(linha)) {
-          doc.moveDown(0.7);
-          doc.font("Helvetica-Bold").fontSize(15).fillColor("#003366").text(linha.replace(/^#{2}\s+/, ""));
-          doc.moveDown(0.7);
-        } else if (/^#\s+/.test(linha)) {
           doc.moveDown(1);
-          doc.font("Helvetica-Bold").fontSize(18).fillColor("#003366").text(linha.replace(/^#\s+/, ""));
-          doc.moveDown(0.7);
+          doc.font("Helvetica-Bold").fontSize(15).fillColor("#003366")
+            .text(linha.replace(/^#{2}\s+/, ""));
+          doc.moveDown(0.8);
+        } else if (/^#\s+/.test(linha)) {
+          doc.moveDown(1.2);
+          doc.font("Helvetica-Bold").fontSize(18).fillColor("#003366")
+            .text(linha.replace(/^#\s+/, ""));
+          doc.moveDown(0.8);
         }
 
-        // Listas com * ou -
+        // --- Listas ---
         else if (/^(\*|-)\s+/.test(linha)) {
+          const texto = linha.replace(/^(\*|-)\s+/, "");
           doc.font("Helvetica").fontSize(12).fillColor("#000000")
-            .text("• " + linha.replace(/^(\*|-)\s+/, ""), { indent: 20 });
+            .text("• " + texto, { indent: 20 });
+          doc.moveDown(0.2);
         }
 
-        // Negrito com **texto**
+        // --- Negrito inline ---
         else if (/\*\*(.*?)\*\*/.test(linha)) {
           const partes = linha.split(/\*\*(.*?)\*\*/g);
           partes.forEach((parte, i) => {
@@ -95,22 +89,20 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
               doc.font("Helvetica").text(parte, { continued: true });
             }
           });
-          doc.text(""); // quebra linha
-          doc.moveDown(0.4);
+          doc.text(""); // solta a linha
+          doc.moveDown(0.6);
         }
 
-        // Parágrafo comum
+        // --- Parágrafo comum ---
         else {
-          doc.font("Helvetica").fontSize(12).fillColor("#000000").text(linha, {
-            align: "justify",
-            lineGap: 4,
-          });
-          doc.moveDown(0.5);
+          doc.font("Helvetica").fontSize(12).fillColor("#000000")
+            .text(linha, { align: "justify", lineGap: 4 });
+          doc.moveDown(0.6);
         }
       });
 
       // ====== MENSAGEM FINAL ======
-      doc.moveDown(1.2);
+      doc.moveDown(1.5);
       doc.font("Helvetica-Bold").fillColor("#003366").fontSize(14)
         .text("Mensagem Final", { align: "left" });
       doc.moveDown(0.5);
@@ -122,18 +114,10 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
 
       doc.end();
 
-      stream.on("finish", () => {
-        console.log(`✅ PDF gerado com sucesso: ${filePath}`);
-        resolve(filePath);
-      });
-
-      stream.on("error", (err) => {
-        console.error("❌ Erro ao gerar PDF:", err);
-        reject(err);
-      });
+      stream.on("finish", () => resolve(filePath));
+      stream.on("error", reject);
 
     } catch (error) {
-      console.error("❌ Erro no processo de geração de PDF:", error);
       reject(error);
     }
   });
