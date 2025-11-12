@@ -7,6 +7,19 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Função auxiliar para processar **negrito** no texto
+function escreverTextoFormatado(doc, texto) {
+  const partes = texto.split(/(\*\*.*?\*\*)/g);
+  partes.forEach((parte) => {
+    if (parte.startsWith('**') && parte.endsWith('**')) {
+      doc.font('Helvetica-Bold').text(parte.slice(2, -2), { continued: true });
+    } else {
+      doc.font('Helvetica').text(parte, { continued: true });
+    }
+  });
+  doc.text(''); // quebra linha no final
+}
+
 export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
   return new Promise((resolve, reject) => {
     try {
@@ -63,18 +76,18 @@ export function gerarRelatorioPDF(dadosUsuario, textoDaIA) {
       const paragrafos = textoDaIA
         .replace(/\d+\.\s*/g, '')
         .split(/\n+/)
-        .filter(p => p.trim().length > 0);
+        .filter((p) => p.trim().length > 0);
 
       doc.fillColor('#000000').fontSize(12);
 
-      paragrafos.forEach(paragrafo => {
+      paragrafos.forEach((paragrafo) => {
         const match = paragrafo.match(/^([A-Za-zÀ-ú\s\/()\-]+:)(.*)/);
         if (match) {
           const [_, titulo, resto] = match;
           doc.font('Helvetica-Bold').text(titulo.trim(), { continued: true });
-          doc.font('Helvetica').text(resto.trim());
+          escreverTextoFormatado(doc, resto.trim());
         } else {
-          doc.font('Helvetica').text(paragrafo.trim(), { align: 'justify' });
+          escreverTextoFormatado(doc, paragrafo.trim());
         }
         doc.moveDown(0.7);
       });
